@@ -23,13 +23,14 @@ namespace Testflight
 
 		public IConfiguration Configuration { get; }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddHealthChecks().AddCheck<SimpleHealthCheck>("simple_health_check");
-			services.AddSwaggerDocument(document => document.DocumentName = "swagger_doc"); // see for more details :: https://github.com/RicoSuter/NSwag
+			/*
+			 * See for more details :: https://github.com/RicoSuter/NSwag
+			 */
+			services.AddSwaggerDocument(document => document.DocumentName = "swagger_doc");
 
-			string domain = $"https://{Configuration["Auth0:Domain"]}/";
 			services.AddAuthentication(options =>
 			{
 				options.DefaultAuthenticateScheme = MSJwtBearer.JwtBearerDefaults.AuthenticationScheme;
@@ -37,17 +38,26 @@ namespace Testflight
 
 			}).AddJwtBearer(options =>
 			{
-				options.Authority = domain;
-				options.Audience = Configuration["Auth0:ApiIdentifier"];
+				/*
+				 * It represents the intended recipient of the incoming token or the resource that the token grants access to.
+				 * If the value specified in this parameter doesn’t match the aud parameter in the token, the token will be rejected because it was meant to be used for accessing a different resource.
+				 * Note that different security token providers have different behaviors regarding what is used as the ‘aud’ claim (some use the URI of a resource a user wants to access, others use scope names).
+				 * Be sure to use an audience that makes sense given the tokens you plan to accept.
+				 */
+				options.Authority = Configuration["Auth:Domain"];
+				/*
+				 * It's the address of the token-issuing authentication server.
+				 * The JWT bearer authentication middleware will use this URI to find and retrieve the public key that can be used to validate the token’s signature.
+				 * It will also confirm that the iss parameter in the token matches this URI.
+				 */
+				options.Audience = Configuration["Auth:ApiIdentifier"];
 			});
 			services.AddAuthorization(options =>
 			{
-				options.AddPolicy("notused:testonly", policy => policy.Requirements.Add(new HasScopeRequirement("read:data", domain)));
-				options.AddPolicy("read:data", policy => policy.Requirements.Add(new HasPermissionRequirement("read:data", domain)));
-				options.AddPolicy("read:reports", policy => policy.Requirements.Add(new HasPermissionRequirement("read:reports", domain)));
+				options.AddPolicy("read:data", policy => policy.Requirements.Add(new HasPermissionRequirement("read:data", Configuration["Auth:Domain"])));
+				options.AddPolicy("read:reports", policy => policy.Requirements.Add(new HasPermissionRequirement("read:reports", Configuration["Auth:Domain"])));
 			});
 
-			services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 			services.AddSingleton<IAuthorizationHandler, HasPermissionHandler>();
 
 			services.AddMvc(options => options.Filters.Add(typeof(CustomExceptionFilterAttribute)))
@@ -74,7 +84,6 @@ namespace Testflight
 			services.AddScoped<IProductService, ProductService>();
 		}
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
 			app.UseHealthChecks("/health");
