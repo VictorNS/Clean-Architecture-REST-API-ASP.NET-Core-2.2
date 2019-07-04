@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testflight.Application.Products;
 using Testflight.Infrustructure;
 using Testflight.Infrustructure.Authorization;
@@ -56,9 +58,27 @@ namespace Testflight
 			{
 				options.AddPolicy("read:data", policy => policy.Requirements.Add(new HasPermissionRequirement("read:data", Configuration["Auth:Domain"])));
 				options.AddPolicy("read:reports", policy => policy.Requirements.Add(new HasPermissionRequirement("read:reports", Configuration["Auth:Domain"])));
+				options.AddPolicy("custom_header", policy => policy.Requirements.Add(new HasCustomHeaderRequirement()));
 			});
-
+			/*
+			 * Instead of:
+			 * services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			 * you can use the row below:
+			 */
+			services.AddHttpContextAccessor();
 			services.AddSingleton<IAuthorizationHandler, HasPermissionHandler>();
+			services.AddSingleton<IAuthorizationHandler, HasCustomHeaderHandler>();
+			services.AddTransient<CustomHeaderModel>(serviceProvider =>
+			{
+				var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+				if (httpContextAccessor.HttpContext == null)
+					return null;
+
+				if (!HasCustomHeaderHandler.HasSecretId(httpContextAccessor, out int secretId))
+					return null;
+
+				return new CustomHeaderModel { SecretId = secretId };
+			});
 
 			services.AddMvc(options => options.Filters.Add(typeof(CustomExceptionFilterAttribute)))
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

@@ -31,11 +31,23 @@ I came up with an idea to create this repository after watching the following vi
 	_It can be any UI, or a list of UIs’. As usually depends on the application and the persistence._
 
 ## Best practices
-*	Health check
-*	Swagger
-	*	Return codes
-*	Logging & Exception attributes
-	*	Logging in an app
-	*	Exception in an app
-	*	Catch by ExceptionAttribute => ProblemDetails
-*	Authorization & Policy
+### Health check
+`SimpleHealthCheck` implements health check logic.
+
+_See Query 1 in `testflight.http`_
+
+### Swagger
+Don't forget about _return codes_. See attributes `ApiConventionMethod` and `ProducesResponseType` in `ProductsController`. And check the result in swagger UI.
+
+### Logging & Exception attributes
+1. Define exceptions on the application level (`NotFoundException` and `ConflictException`).
+2. Use a logging in your app (see `ILogger` in `ProductService`).
+3. Catch exceptions on the presentation level and return `ProblemDetails` class (see `ExceptionAttribute`).
+
+_See Query 2 in `testflight.http`_
+
+### Authorization & Policy
+1. Define your policies and custom implementations (see `HasPermissionHandler`).
+2. Parse custom headers, inject the result and use in your controller methods (see `HasCustomHeaderHandler`, `CustomHeaderModel` and `ValuesController.Delete()`).
+
+_See Query 3 in `testflight.http`_

@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Testflight.Infrustructure.Authorization;
 
 namespace Testflight.Controllers
 {
@@ -41,8 +43,11 @@ namespace Testflight.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		public void Delete(int id)
+		[Authorize("custom_header")]
+		public void Delete([FromServices] CustomHeaderModel customHeader, int id)
 		{
+			if (customHeader.SecretId != id)
+				throw new Exception($"Invalid header with secretId: {customHeader.SecretId}");
 		}
 	}
 }
