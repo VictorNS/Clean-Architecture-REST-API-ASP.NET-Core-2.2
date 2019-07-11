@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hangfire" Version="1.7.4" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.4" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
@@ -14,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Testflight.Application\Testflight.Application.csproj" />
+    <ProjectReference Include="..\Testflight.Hangfire\Testflight.Hangfire.csproj" />
     <ProjectReference Include="..\Testflight.Persistence.InMemory\Testflight.Persistence.InMemory.csproj" />
     <ProjectReference Include="..\Testflight.Persistence\Testflight.Persistence.csproj" />
   </ItemGroup>

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Hangfire;
+using Hangfire.MemoryStorage;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Testflight.Application.HangfireTest;
 using Testflight.Application.Products;
 using Testflight.Infrustructure;
 using Testflight.Infrustructure.Authorization;
@@ -18,21 +21,29 @@ namespace Testflight
 {
 	public class Startup
 	{
-		public Startup(IConfiguration configuration)
+		private readonly ILogger _logger;
+		public IConfiguration Configuration { get; }
+
+		public Startup(IConfiguration configuration, ILogger<Startup> logger)
 		{
 			Configuration = configuration;
+			_logger = logger;
 		}
-
-		public IConfiguration Configuration { get; }
 
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddMvc(options => options.Filters.Add(typeof(CustomExceptionFilterAttribute)))
+				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+			#region Developer tools
 			services.AddHealthChecks().AddCheck<SimpleHealthCheck>("simple_health_check");
 			/*
 			 * See for more details :: https://github.com/RicoSuter/NSwag
 			 */
 			services.AddSwaggerDocument(document => document.DocumentName = "swagger_doc");
+			#endregion Developer tools
 
+			#region Authentication & Authorization
 			services.AddAuthentication(options =>
 			{
 				options.DefaultAuthenticateScheme = MSJwtBearer.JwtBearerDefaults.AuthenticationScheme;
@@ -79,9 +90,7 @@ namespace Testflight
 
 				return new CustomHeaderModel { SecretId = secretId };
 			});
-
-			services.AddMvc(options => options.Filters.Add(typeof(CustomExceptionFilterAttribute)))
-				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			#endregion Authentication & Authorization
 
 			services.AddDbContext<ISmartAppartmentDbContext, SmartAppartmentDbContext>(options =>
 			{
@@ -102,17 +111,32 @@ namespace Testflight
 			});
 
 			services.AddScoped<IProductService, ProductService>();
+			services.AddScoped<IHangfireWorkerService, HangfireWorkerService>();
+			services.AddTransient<Hangfire.HangfireWorkerJob>();
+
+			#region Hangfire
+			services.AddHangfire(configuration => configuration
+				.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+				.UseSimpleAssemblyNameTypeSerializer()
+				.UseRecommendedSerializerSettings()
+				.UseMemoryStorage());
+			services.AddHangfireServer();
+			#endregion Hangfire
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env, IBackgroundJobClient backgroundJobs)
 		{
 			app.UseHealthChecks("/health");
 
 			if (env.IsDevelopment())
 			{
+				_logger.LogInformation("In Development environment");
 				// app.UseDeveloperExceptionPage();
 				app.UseSwagger();
 				app.UseSwaggerUi3(); // should be via console :: http://localhost:5000/swagger
+				app.UseHangfireDashboard();
+				backgroundJobs.Enqueue<Hangfire.HangfireWorkerJob>(j => j.Run("Call from Startup"));
+				_logger.LogInformation("A Hangfire job was created");
 			}
 			else
 			{

@@ -20,7 +20,10 @@
 		"Testflight.API": {
 			"commandName": "Project",
 			"launchBrowser": true,
+			//"launchUrl": "health",
 			"launchUrl": "swagger",
+			//"launchUrl": "hangfire",
+			"": null,
 			"applicationUrl": "http://localhost:5000",
 			"environmentVariables": {
 				"ASPNETCORE_ENVIRONMENT": "Development"

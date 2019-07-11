@@ -5,6 +5,10 @@ I came up with an idea to create this repository after watching the following vi
 *	Glenn Condron - APIs and Microservices in ASP.NET Core Today and Tomorrow (https://youtu.be/dUdGcogYkss)
 *	What's new in ASP.NET Core 2.2 (https://docs.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-2.2?view=aspnetcore-2.2)
 
+## Prerequisites
+* [Visual Studio 2019](https://www.visualstudio.com/downloads/) & [.NET Core SDK 2.2](https://www.microsoft.com/net/download/dotnet-core/2.2)
+* [Visual Studio Code](https://code.visualstudio.com) & [REST Client extension](https://github.com/Huachao/vscode-restclient)
+
 ## Key points of the application
 *	Core
 	*	Domain<br />
@@ -46,8 +50,16 @@ Don't forget about _return codes_. See attributes `ApiConventionMethod` and `Pro
 
 _See Query 2 in `testflight.http`_
 
+## Tips & tricks
 ### Authorization & Policy
 1. Define your policies and custom implementations (see `HasPermissionHandler`).
 2. Parse custom headers, inject the result and use in your controller methods (see `HasCustomHeaderHandler`, `CustomHeaderModel` and `ValuesController.Delete()`).
 
 _See Query 3 in `testflight.http`_
+
+### Hangfire
+1. Define a job with DI (see `HangfireWorkerJob`).
+2. Create a backgound job on startup (see `Startup.Configure()`).
+3. Create a backgound job in controller (see `HangfireTestController`).
+
+_See Query 4 in `testflight.http`_
