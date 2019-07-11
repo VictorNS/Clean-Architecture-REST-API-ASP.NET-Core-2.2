@@ -135,7 +135,7 @@ namespace Testflight
 				app.UseSwagger();
 				app.UseSwaggerUi3(); // should be via console :: http://localhost:5000/swagger
 				app.UseHangfireDashboard();
-				backgroundJobs.Enqueue<Hangfire.HangfireWorkerJob>(j => j.Run("Call from Startup"));
+				backgroundJobs.Enqueue<Hangfire.HangfireWorkerJob>(j => j.RunAsync("Call from Startup"));
 				_logger.LogInformation("A Hangfire job was created");
 			}
 			else

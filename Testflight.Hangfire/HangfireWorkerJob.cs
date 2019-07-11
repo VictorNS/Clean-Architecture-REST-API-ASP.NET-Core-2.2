@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Hangfire;
 using Testflight.Application.HangfireTest;
 
@@ -17,10 +18,10 @@ namespace Testflight.Hangfire
 		}
 
 		[AutomaticRetry(Attempts = 3)]
-		public void Run(string input)
+		public async Task RunAsync(string input)
 		{
 			// It's an example of sending a parameter to a service.
-			_realWorker.Run(input);
+			await _realWorker.RunAsync(input);
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Testflight.API.Controllers
 
 		public IActionResult Index()
         {
-			var jobId = _backgroundJobs.Enqueue<Hangfire.HangfireWorkerJob>(j => j.Run("Call from HangfireTestController"));
+			var jobId = _backgroundJobs.Enqueue<Hangfire.HangfireWorkerJob>(j => j.RunAsync("Call from HangfireTestController"));
 			return Ok(new { jobId });
         }
     }

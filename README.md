@@ -38,7 +38,7 @@ I came up with an idea to create this repository after watching the following vi
 ### Health check
 `SimpleHealthCheck` implements health check logic.
 
-_See Query 1 in `testflight.http`_
+_Query 1 in `testflight.http`_
 
 ### Swagger
 Don't forget about _return codes_. See attributes `ApiConventionMethod` and `ProducesResponseType` in `ProductsController`. And check the result in swagger UI.
@@ -48,18 +48,18 @@ Don't forget about _return codes_. See attributes `ApiConventionMethod` and `Pro
 2. Use a logging in your app (see `ILogger` in `ProductService`).
 3. Catch exceptions on the presentation level and return `ProblemDetails` class (see `ExceptionAttribute`).
 
-_See Query 2 in `testflight.http`_
+_Query 2 in `testflight.http`_
 
 ## Tips & tricks
 ### Authorization & Policy
 1. Define your policies and custom implementations (see `HasPermissionHandler`).
 2. Parse custom headers, inject the result and use in your controller methods (see `HasCustomHeaderHandler`, `CustomHeaderModel` and `ValuesController.Delete()`).
 
-_See Query 3 in `testflight.http`_
+_Query 3 in `testflight.http`_
 
 ### Hangfire
 1. Define a job with DI (see `HangfireWorkerJob`).
 2. Create a backgound job on startup (see `Startup.Configure()`).
 3. Create a backgound job in controller (see `HangfireTestController`).
 
-_See Query 4 in `testflight.http`_
+_Query 4 in `testflight.http`_

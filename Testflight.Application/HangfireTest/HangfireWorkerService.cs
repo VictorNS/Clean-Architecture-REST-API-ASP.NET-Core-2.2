@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Testflight.Application.HangfireTest
 {
 	public interface IHangfireWorkerService
 	{
-		void Run(string text);
+		Task RunAsync(string text);
 	}
 
 	public class HangfireWorkerService : IHangfireWorkerService
@@ -16,13 +17,16 @@ namespace Testflight.Application.HangfireTest
 			this._workerId = Guid.NewGuid().ToString();
 		}
 
-		public void Run(string text)
+		public async Task RunAsync(string text)
 		{
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine($"Text: {text}, WorkerId: {_workerId}, At: {DateTime.Now}");
-			Console.ForegroundColor = ConsoleColor.White;
-			// If you need repeat a task - just throw an exception.
-			throw new Exception("=== Repeat the task, please ===");
+			await Task.Run(() =>
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"Text: {text}, WorkerId: {_workerId}, At: {DateTime.Now}");
+				Console.ForegroundColor = ConsoleColor.White;
+				// If you need repeat a task - just throw an exception.
+				throw new Exception("=== Repeat the task, please ===");
+			});
 		}
 	}
 }
